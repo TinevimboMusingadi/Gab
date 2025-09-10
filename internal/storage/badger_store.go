@@ -20,22 +20,11 @@ type Store struct {
 }
 
 func Init(dataDir string) error {
-    opts := badger.DefaultOptions(filepath.Join(dataDir, objectsDir))
-    _, err := badger.Open(opts.WithLogger(nil))
-    if err == nil {
-        // Close immediately; create folders/manifest
-        // Note: open-test to create DB
-        _ = badger.DefaultOptions("")
-    }
-    // We return nil if open succeeded
-    if err == nil {
-        // Close db properly by re-opening with Open, defer Close
-        db, err2 := badger.Open(opts.WithLogger(nil))
-        if err2 != nil { return err2 }
-        defer db.Close()
-        return nil
-    }
-    return err
+    opts := badger.DefaultOptions(filepath.Join(dataDir, objectsDir)).WithLogger(nil)
+    db, err := badger.Open(opts)
+    if err != nil { return err }
+    defer db.Close()
+    return nil
 }
 
 func Open(dataDir string) (*Store, error) {
