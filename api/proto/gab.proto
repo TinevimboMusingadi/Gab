@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package gab.v1;
+
+option go_package = "gab/api/gen/gab/v1;gabv1";
+
+message Artifact {
+  string id = 1;
+  string content_type = 2;
+  bytes data = 3;
+}
+
+message State {
+  string id = 1;
+  map<string,string> resources = 2;
+}
+
+message ActionDescriptor {
+  string type = 1;
+  map<string,string> params = 2;
+  string agent_id = 3;
+  string tool = 4;
+  int64 started_at_unix = 5;
+  int64 finished_at_unix = 6;
+}
+
+message Event {
+  string id = 1;
+  string parent_event_hash = 2;
+  string pre_action_state_hash = 3;
+  string post_action_state_hash = 4;
+  ActionDescriptor action = 5;
+  repeated string resulting_artifact_hashes = 6;
+}
+
+message RecordCommandRequest {
+  string agent_id = 1;
+  string scope_dir = 2;
+  string cwd = 3;
+  string command = 4;
+  repeated string args = 5;
+  repeated string env = 6;
+}
+
+message RecordCommandResponse { Event event = 1; }
+
+message GetEventRequest { string id = 1; }
+message GetEventResponse { Event event = 1; }
+
+message GetHeadRequest { string agent_id = 1; }
+message GetHeadResponse { string event_id = 1; }
+
+service Gab {
+  rpc RecordCommand (RecordCommandRequest) returns (RecordCommandResponse);
+  rpc GetEvent (GetEventRequest) returns (GetEventResponse);
+  rpc GetHead (GetHeadRequest) returns (GetHeadResponse);
+}
+
+
