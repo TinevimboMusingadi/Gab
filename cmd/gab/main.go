@@ -23,6 +23,7 @@ func main() {
     rootCmd.AddCommand(newRecordCmd())
     rootCmd.AddCommand(newLogCmd())
     rootCmd.AddCommand(newShowCmd())
+    rootCmd.AddCommand(newTimelineCmd())
 
     if err := rootCmd.Execute(); err != nil {
         fmt.Fprintln(os.Stderr, err)

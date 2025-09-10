@@ -4,6 +4,7 @@ import (
     "encoding/json"
     "errors"
     "path/filepath"
+    "strings"
     "time"
 
     badger "github.com/dgraph-io/badger/v4"
@@ -51,7 +52,37 @@ func reverseTimestamp(ts time.Time) string {
 
 func (i *Index) AddEventTime(agentID, eventHash string, ts time.Time) error {
     key := []byte("time:" + agentID + ":" + reverseTimestamp(ts) + ":" + eventHash)
-    return i.db.Update(func(txn *badger.Txn) error { return txn.Set(key, []byte("1")) })
+    val, _ := json.Marshal(ts.UnixNano())
+    return i.db.Update(func(txn *badger.Txn) error { return txn.Set(key, val) })
+}
+
+type TimeEntry struct {
+    EventHash string
+    Time      time.Time
+}
+
+func (i *Index) ListByTime(agentID string, limit int) ([]TimeEntry, error) {
+    prefix := []byte("time:" + agentID + ":")
+    entries := make([]TimeEntry, 0, limit)
+    err := i.db.View(func(txn *badger.Txn) error {
+        it := txn.NewIterator(badger.IteratorOptions{PrefetchValues: true, Prefix: prefix})
+        defer it.Close()
+        for it.Rewind(); it.ValidForPrefix(prefix); it.Next() {
+            item := it.Item()
+            k := string(item.Key())
+            // key format: time:<agent>:<rev_ts>:<hash>
+            // event hash is after last ':'
+            idx := strings.LastIndex(k, ":")
+            if idx <= 0 { continue }
+            hash := k[idx+1:]
+            var nsec int64
+            if err := item.Value(func(v []byte) error { return json.Unmarshal(v, &nsec) }); err != nil { return err }
+            entries = append(entries, TimeEntry{EventHash: hash, Time: time.Unix(0, nsec).UTC()})
+            if limit > 0 && len(entries) >= limit { break }
+        }
+        return nil
+    })
+    return entries, err
 }
 
 
