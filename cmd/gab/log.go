@@ -5,6 +5,7 @@ import (
     "gab/internal/index"
     "gab/internal/models"
     "gab/internal/storage"
+    "time"
 )
 
 import "github.com/spf13/cobra"
@@ -34,7 +35,8 @@ func newLogCmd() *cobra.Command {
             for current != "" {
                 var ev models.Event
                 if err := store.GetObject(current, &ev); err != nil { return err }
-                fmt.Printf("%s %s %s %s\n", ev.ID, ev.Action.Type, ev.Action.Tool, ev.Action.Params["command"])
+                ts := time.Unix(ev.Action.FinishedAtUnix, 0).UTC().Format("2006-01-02T15:04:05Z07:00")
+                fmt.Printf("%s %s %s %s %s\n", ts, ev.ID, ev.Action.Type, ev.Action.Tool, ev.Action.Params["command"])
                 current = ev.ParentEventHash
             }
             return nil
