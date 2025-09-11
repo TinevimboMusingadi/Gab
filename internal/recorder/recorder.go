@@ -39,10 +39,27 @@ type RecordCommandInput struct {
 
 type RecordedEvent struct { models.Event }
 
-func snapshotDir(scope string, st *storage.Store) (models.State, error) {
+func isExcluded(path string, excludes []string) bool {
+	p := filepath.Clean(path)
+	for _, ex := range excludes {
+		if ex == "" { continue }
+		e := filepath.Clean(ex)
+		if p == e { return true }
+		if len(p) > len(e) && p[:len(e)] == e {
+			if p[len(e)] == filepath.Separator { return true }
+		}
+	}
+	return false
+}
+
+func snapshotDir(scope string, excludes []string, st *storage.Store) (models.State, error) {
 	resources := map[string]string{}
 	err := filepath.WalkDir(scope, func(path string, d fs.DirEntry, err error) error {
 		if err != nil { return err }
+		if isExcluded(path, excludes) {
+			if d.IsDir() { return fs.SkipDir }
+			return nil
+		}
 		if d.IsDir() { return nil }
 		data, err := os.ReadFile(path)
 		if err != nil { return nil }
@@ -61,7 +78,12 @@ func snapshotDir(scope string, st *storage.Store) (models.State, error) {
 }
 
 func (r *Recorder) RecordCommand(ctx context.Context, in RecordCommandInput) (*RecordedEvent, error) {
-	preState, err := snapshotDir(in.ScopeDir, r.store)
+	// Default excludes to avoid ballooning artifacts: .git and gab_data under scope
+	defaultExcludes := []string{
+		filepath.Join(in.ScopeDir, ".git"),
+		filepath.Join(in.ScopeDir, "gab_data"),
+	}
+	preState, err := snapshotDir(in.ScopeDir, defaultExcludes, r.store)
 	if err != nil { return nil, err }
 
 	start := time.Now().UTC()
@@ -88,7 +110,7 @@ func (r *Recorder) RecordCommand(ctx context.Context, in RecordCommandInput) (*R
 	exitArt.ComputeID()
 	_ = r.store.PutObject(exitArt.ID, &exitArt)
 
-	postState, err := snapshotDir(in.ScopeDir, r.store)
+	postState, err := snapshotDir(in.ScopeDir, defaultExcludes, r.store)
 	if err != nil { return nil, err }
 
 	// Build event
