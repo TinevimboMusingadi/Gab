@@ -42,6 +42,18 @@ Gab is an append-only, tamper-evident activity tracking system for AI agents, in
    gab show <event_hash>
    ```
 
+### Python wrapper (Phase 2 preview)
+
+Install the CLI first and ensure it is on PATH. Then use the Python client to call the CLI under the hood:
+
+```python
+from gab import init, exec
+
+init(data_dir="./gab_data")
+event = exec(["cmd", "/c", "echo", "hello"], agent_id="demo", scope_dir=".")
+print(event["id"])  # Event hash
+```
+
 ### Repository Layout
 
 - `cmd/gab/`: CLI entrypoint and commands
