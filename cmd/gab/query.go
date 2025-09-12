@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"gab/internal/deduce"
+
 	"github.com/spf13/cobra"
 )
 
@@ -18,9 +20,12 @@ func newQueryCmd() *cobra.Command {
 			if _, err := os.Stat(facts); err != nil {
 				return fmt.Errorf("no facts found; run record-cmd first")
 			}
-			// For now, just echo the query and path. Future: parse and run against engine.
-			fmt.Printf("Facts: %s\nQuery: %s\n", facts, q)
-			fmt.Println("(Engine integration coming in Phase 3.3; see https://github.com/google/mangle)")
+			engine := &deduce.PlaceholderEngine{FactsPath: facts}
+			res, err := engine.Exec(q)
+			if err != nil {
+				return err
+			}
+			fmt.Println(res)
 			return nil
 		},
 	}

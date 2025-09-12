@@ -20,13 +20,14 @@ import (
 )
 
 type Recorder struct {
-	store *storage.Store
-	idx   *index.Index
-	sink  graph.Sink
+	store   *storage.Store
+	idx     *index.Index
+	sink    graph.Sink
+	dataDir string
 }
 
-func New(store *storage.Store, idx *index.Index) *Recorder {
-	return &Recorder{store: store, idx: idx, sink: graph.NewNoopSink()}
+func New(store *storage.Store, idx *index.Index, dataDir string) *Recorder {
+	return &Recorder{store: store, idx: idx, sink: graph.NewNoopSink(), dataDir: dataDir}
 }
 
 func WithSink(r *Recorder, s graph.Sink) *Recorder { r.sink = s; return r }
@@ -181,7 +182,7 @@ func (r *Recorder) RecordCommand(ctx context.Context, in RecordCommandInput) (*R
 	_ = r.sink.WriteEvent(in.AgentID, &ev, &preState, &postState)
 
 	// Emit EDB facts (Phase 3.1)
-	if w, err := deduce.New("./gab_data"); err == nil {
+	if w, err := deduce.New(r.dataDir); err == nil {
 		res := map[string]string{"stdout": stdoutArt.ID, "stderr": stderrArt.ID, "exit_code": exitArt.ID}
 		_ = w.EmitEventFacts(in.AgentID, &ev, &preState, &postState, res, finish)
 	}
