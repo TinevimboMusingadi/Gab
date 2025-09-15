@@ -26,6 +26,7 @@ func main() {
 	rootCmd.AddCommand(newTimelineCmd())
 	rootCmd.AddCommand(newFactsCmd())
 	rootCmd.AddCommand(newQueryCmd())
+	rootCmd.AddCommand(newRulesCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
