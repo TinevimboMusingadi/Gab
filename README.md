@@ -62,6 +62,8 @@ print(event["id"])  # Event hash
 - `internal/storage/`: Badger-based object store
 - `internal/index/`: Embedded indices (heads, time-based)
 - `internal/recorder/`: Snapshot/execute/record logic
+- `internal/deduce/`: EDB facts writer, rules installer, engine abstraction
 - `test/`: Unit tests for models and storage
+- `docs/ARCHITECTURE.md`: Full architecture and design document
 
 
