@@ -50,10 +50,72 @@ message GetEventResponse { Event event = 1; }
 message GetHeadRequest { string agent_id = 1; }
 message GetHeadResponse { string event_id = 1; }
 
+message ListAgentsRequest {}
+message ListAgentsResponse {
+  repeated string agent_ids = 1;
+}
+
+message ListEventsRequest {
+  string agent_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+message ListEventsResponse {
+  repeated Event events = 1;
+  int32 total = 2;
+}
+
+message GetEventChainRequest {
+  string agent_id = 1;
+  int32 limit = 2;
+}
+message GetEventChainResponse {
+  repeated Event events = 1;
+}
+
+message GetStateDiffRequest {
+  string pre_state_id = 1;
+  string post_state_id = 2;
+}
+message GetStateDiffResponse {
+  repeated FileChange created = 1;
+  repeated FileChange modified = 2;
+  repeated FileChange deleted = 3;
+}
+
+message FileChange {
+  string path = 1;
+  string pre_artifact_id = 2;
+  string post_artifact_id = 3;
+}
+
+message QueryEventsRequest {
+  string agent_id = 1;
+  string action_type = 2;
+  string tool = 3;
+  int64 start_time = 4;
+  int64 end_time = 5;
+  int32 limit = 6;
+  int32 offset = 7;
+}
+message QueryEventsResponse {
+  repeated Event events = 1;
+  int32 total = 2;
+}
+
+message GetArtifactRequest { string artifact_id = 1; }
+message GetArtifactResponse { Artifact artifact = 1; }
+
 service Gab {
   rpc RecordCommand (RecordCommandRequest) returns (RecordCommandResponse);
   rpc GetEvent (GetEventRequest) returns (GetEventResponse);
   rpc GetHead (GetHeadRequest) returns (GetHeadResponse);
+  rpc ListAgents (ListAgentsRequest) returns (ListAgentsResponse);
+  rpc ListEvents (ListEventsRequest) returns (ListEventsResponse);
+  rpc GetEventChain (GetEventChainRequest) returns (GetEventChainResponse);
+  rpc GetStateDiff (GetStateDiffRequest) returns (GetStateDiffResponse);
+  rpc QueryEvents (QueryEventsRequest) returns (QueryEventsResponse);
+  rpc GetArtifact (GetArtifactRequest) returns (GetArtifactResponse);
 }
 
 
