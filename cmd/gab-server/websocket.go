@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -54,7 +54,7 @@ func (ws *WebSocketServer) Start() error {
 	router.HandleFunc("/api/v1/stream/agents/{agent_id}/events", ws.handleStream)
 
 	httpServer := &http.Server{
-		Addr:    ":" + string(rune(ws.config.WSPort)),
+		Addr:    fmt.Sprintf(":%d", ws.config.WSPort),
 		Handler: router,
 	}
 
