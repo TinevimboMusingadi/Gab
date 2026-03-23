@@ -9,7 +9,7 @@ Gab is an append-only, tamper-evident activity tracking system for AI agents, in
 - **State Snapshots**: Pre/post action directory snapshots capture system context
 - **Datalog Facts**: Automatic emission of facts for deductive reasoning and querying
 - **Time-Based Indexing**: Efficient chronological event queries
-- **Python Integration**: Easy-to-use Python client for agent integration
+- **Python Integration**: Easy-to-use Python client for agent integration for testingn
 
 ### Phases & Stages
 
